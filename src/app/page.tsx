@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChat } from 'ai/react';
-import { Frown, Coffee, Zap, Smile, ArrowLeft, Download, RefreshCw } from 'lucide-react';
+import { Frown, Coffee, Zap, Smile, ArrowLeft, Download, RefreshCw, AlertCircle } from 'lucide-react';
 import MoodButton from '@/components/MoodButton';
 import { toPng } from 'html-to-image';
 import { useRef } from 'react';
@@ -13,18 +13,37 @@ export default function Home() {
   const [selectedMood, setSelectedMood] = useState('');
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const { messages, append, isLoading, setMessages } = useChat({
+  const { messages, append, isLoading, setMessages, error } = useChat({
     api: '/api/chat',
+    onResponse: (response) => {
+      if (!response.ok) {
+        console.error('Response error:', response.statusText);
+      }
+    },
+    onError: (err) => {
+      console.error('Chat hook error:', err);
+    }
   });
+
+  // Filter messages to only show assistant response
+  const assistantMessage = messages.find(m => m.role === 'assistant');
 
   const handleMoodSelect = async (mood: string) => {
     setSelectedMood(mood);
     setStep('result');
     setMessages([]);
-    await append({
-      role: 'user',
-      content: `Saya sedang merasa ${mood}. Berikan saya kata-kata penyemangat.`,
-    });
+    
+    // Gunakan setTimeout untuk memastikan transisi selesai sebelum memanggil API
+    setTimeout(async () => {
+      try {
+        await append({
+          role: 'user',
+          content: `Saya sedang merasa ${mood}. Berikan saya kata-kata penyemangat.`,
+        });
+      } catch (e) {
+        console.error('Trigger error:', e);
+      }
+    }, 500);
   };
 
   const downloadImage = () => {
@@ -112,17 +131,24 @@ export default function Home() {
                 </div>
                 
                 <div className="relative z-10">
-                  {isLoading && messages.length === 1 ? (
-                    <div className="flex justify-center">
+                  {error ? (
+                    <div className="flex flex-col items-center text-red-500 gap-2 text-center p-4">
+                      <AlertCircle className="w-10 h-10" />
+                      <p className="font-medium">Waduh, koneksi ke AI terputus.</p>
+                      <p className="text-sm opacity-80">Pastikan API Key Gemini sudah benar di Vercel/env.local dan limit kuota masih ada.</p>
+                    </div>
+                  ) : isLoading && !assistantMessage ? (
+                    <div className="flex flex-col items-center gap-4">
                       <div className="animate-pulse flex space-x-2">
-                        <div className="h-3 w-3 bg-slate-300 rounded-full"></div>
-                        <div className="h-3 w-3 bg-slate-300 rounded-full"></div>
-                        <div className="h-3 w-3 bg-slate-300 rounded-full"></div>
+                        <div className="h-3 w-3 bg-blue-400 rounded-full"></div>
+                        <div className="h-3 w-3 bg-blue-400 rounded-full"></div>
+                        <div className="h-3 w-3 bg-blue-400 rounded-full"></div>
                       </div>
+                      <p className="text-slate-400 text-sm animate-pulse">Sedang merangkai kata untukmu...</p>
                     </div>
                   ) : (
-                    <p className="text-2xl font-serif text-slate-800 leading-relaxed text-center italic">
-                      "{messages[messages.length - 1]?.content}"
+                    <p className="text-2xl font-serif text-slate-800 leading-relaxed text-center italic px-4">
+                      {assistantMessage ? `"${assistantMessage.content}"` : "..."}
                     </p>
                   )}
                 </div>
@@ -141,7 +167,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={downloadImage}
-                  disabled={isLoading}
+                  disabled={isLoading || !!error || !assistantMessage}
                   className="flex-1 flex items-center justify-center gap-2 py-4 bg-blue-600 text-white rounded-2xl font-semibold shadow-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
                   <Download className="w-5 h-5" />
