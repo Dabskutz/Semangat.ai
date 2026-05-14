@@ -149,7 +149,7 @@ export default function Home() {
                       </div>
                       <p className="text-[10px] mt-2 opacity-50">Cek log di Dashboard Vercel untuk detail lebih lanjut.</p>
                     </div>
-                  ) : isLoading && !assistantMessage ? (
+                  ) : isLoadingManual && !assistantMessage ? (
                     <div className="flex flex-col items-center gap-4">
                       <div className="animate-pulse flex space-x-2">
                         <div className="h-3 w-3 bg-blue-400 rounded-full"></div>
@@ -179,7 +179,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={downloadImage}
-                  disabled={isLoading || !!error || !!serverError || !assistantMessage}
+                  disabled={isLoadingManual || !!serverError || !assistantMessage}
                   className="flex-1 flex items-center justify-center gap-2 py-4 bg-blue-600 text-white rounded-2xl font-semibold shadow-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
                   <Download className="w-5 h-5" />
