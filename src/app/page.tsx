@@ -148,7 +148,7 @@ export default function Home() {
                       <AlertCircle className="w-10 h-10" />
                       <p className="font-bold">Masalah Terdeteksi:</p>
                       <div className="text-xs bg-red-50 p-4 rounded-xl border border-red-100 font-mono text-left overflow-auto max-h-40">
-                        {serverError || error?.message || "Terjadi kesalahan tidak dikenal."}
+                        {serverError || (error ? `${error.name}: ${error.message}` : "Terjadi kesalahan tidak dikenal.")}
                       </div>
                       <p className="text-[10px] mt-2 opacity-50">Cek log di Dashboard Vercel untuk detail lebih lanjut.</p>
                     </div>
