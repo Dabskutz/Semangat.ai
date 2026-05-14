@@ -17,19 +17,26 @@ export default function Home() {
   const { messages, append, isLoading, setMessages, error } = useChat({
     api: '/api/chat',
     onResponse: async (response) => {
+      console.log('API Response status:', response.status);
       if (!response.ok) {
         try {
           const data = await response.json();
-          setServerError(data.error || `Error ${response.status}: ${response.statusText}`);
+          console.error('API Error Data:', data);
+          setServerError(data.error || data.details || `Error ${response.status}: ${response.statusText}`);
         } catch (e) {
-          setServerError(`Error ${response.status}: Terjadi kesalahan pada server (Gagal memproses JSON)`);
+          console.error('Failed to parse error JSON:', e);
+          setServerError(`Error ${response.status}: Server mengirimkan format non-JSON (Kemungkinan Error 500 Vercel)`);
         }
       } else {
         setServerError(null);
       }
     },
     onError: (err) => {
-      console.error('Chat hook error:', err);
+      console.error('Chat hook error details:', err);
+      // useChat error message biasanya cukup generik, kita coba perjelas
+      if (err.message === 'Failed to fetch') {
+        setServerError('Gagal terhubung ke server. Periksa koneksi internet atau status server.');
+      }
     }
   });
 
