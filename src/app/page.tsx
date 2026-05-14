@@ -1,40 +1,23 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChat } from 'ai/react';
 import { Frown, Coffee, Zap, Smile, ArrowLeft, Download, RefreshCw, AlertCircle } from 'lucide-react';
 import MoodButton from '@/components/MoodButton';
 import { toPng } from 'html-to-image';
-import { useRef } from 'react';
 
 export default function Home() {
   const [step, setStep] = useState<'home' | 'mood' | 'result'>('home');
   const [selectedMood, setSelectedMood] = useState('');
   const cardRef = useRef<HTMLDivElement>(null);
   const [serverError, setServerError] = useState<string | null>(null);
+  const [isLoadingManual, setIsLoadingManual] = useState(false);
 
-  const { messages, append, isLoading, setMessages, error } = useChat({
+  // Kita tetap gunakan useChat untuk manajemen state pesan, 
+  // tapi kita lakukan fetch manual karena streaming sering bermasalah.
+  const { messages, setMessages } = useChat({
     api: '/api/chat',
-    onResponse: async (response) => {
-      console.log('API Response status:', response.status);
-      if (!response.ok) {
-        try {
-          const data = await response.json();
-          console.error('API Error Data:', data);
-          setServerError(data.error || data.details || `Error ${response.status}: ${response.statusText}`);
-        } catch (e) {
-          console.error('Failed to parse error JSON:', e);
-          setServerError(`Error ${response.status}: Server mengirimkan format non-JSON (Kemungkinan Error 500 Vercel)`);
-        }
-      } else {
-        setServerError(null);
-      }
-    },
-    onError: (err) => {
-      console.error('Chat error:', err);
-      setServerError(`Gagal mendapatkan respon AI: ${err.message}`);
-    }
   });
 
   const assistantMessage = messages.find(m => m.role === 'assistant');
@@ -44,17 +27,31 @@ export default function Home() {
     setStep('result');
     setMessages([]);
     setServerError(null);
+    setIsLoadingManual(true);
     
-    setTimeout(async () => {
-      try {
-        await append({
-          role: 'user',
-          content: `Saya sedang merasa ${mood}. Berikan saya kata-kata penyemangat.`,
-        });
-      } catch (e) {
-        console.error('Trigger error:', e);
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: `Saya sedang merasa ${mood}. Berikan saya kata-kata penyemangat.` }]
+        })
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || data.details || `Error ${response.status}`);
       }
-    }, 500);
+
+      const data = await response.json();
+      // Set pesan asisten secara manual ke dalam state useChat
+      setMessages([{ id: Date.now().toString(), role: 'assistant', content: data.text }]);
+    } catch (e: any) {
+      console.error('Fetch error:', e);
+      setServerError(e.message || 'Gagal terhubung ke server.');
+    } finally {
+      setIsLoadingManual(false);
+    }
   };
 
   const downloadImage = () => {
@@ -74,6 +71,7 @@ export default function Home() {
     setMessages([]);
     setSelectedMood('');
     setServerError(null);
+    setIsLoadingManual(false);
   };
 
   return (
@@ -140,12 +138,12 @@ export default function Home() {
                 </div>
                 
                 <div className="relative z-10">
-                  {(error || serverError) ? (
+                  {serverError ? (
                     <div className="flex flex-col items-center text-red-500 gap-2 text-center p-4">
                       <AlertCircle className="w-10 h-10" />
                       <p className="font-bold">Masalah Terdeteksi:</p>
                       <div className="text-xs bg-red-50 p-4 rounded-xl border border-red-100 font-mono text-left overflow-auto max-h-40">
-                        {serverError || (error ? `${error.name}: ${error.message}` : "Terjadi kesalahan tidak dikenal.")}
+                        {serverError}
                       </div>
                       <p className="text-[10px] mt-2 opacity-50">Cek log di Dashboard Vercel untuk detail lebih lanjut.</p>
                     </div>
