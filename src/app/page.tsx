@@ -18,20 +18,21 @@ export default function Home() {
     api: '/api/chat',
     onResponse: async (response) => {
       if (!response.ok) {
-        const data = await response.json();
-        setServerError(data.error || response.statusText);
+        try {
+          const data = await response.json();
+          setServerError(data.error || `Error ${response.status}: ${response.statusText}`);
+        } catch (e) {
+          setServerError(`Error ${response.status}: Terjadi kesalahan pada server (Gagal memproses JSON)`);
+        }
       } else {
         setServerError(null);
       }
     },
     onError: (err) => {
       console.error('Chat hook error:', err);
-      // useChat error object often doesn't contain the JSON body, 
-      // so we rely more on onResponse for detailed server errors.
     }
   });
 
-  // Filter messages to only show assistant response
   const assistantMessage = messages.find(m => m.role === 'assistant');
 
   const handleMoodSelect = async (mood: string) => {
@@ -54,7 +55,6 @@ export default function Home() {
 
   const downloadImage = () => {
     if (cardRef.current === null) return;
-
     toPng(cardRef.current, { cacheBust: true })
       .then((dataUrl) => {
         const link = document.createElement('a');
@@ -62,9 +62,7 @@ export default function Home() {
         link.href = dataUrl;
         link.click();
       })
-      .catch((err) => {
-        console.error('Opps, something went wrong!', err);
-      });
+      .catch((err) => console.error(err));
   };
 
   const reset = () => {
@@ -141,16 +139,11 @@ export default function Home() {
                   {(error || serverError) ? (
                     <div className="flex flex-col items-center text-red-500 gap-2 text-center p-4">
                       <AlertCircle className="w-10 h-10" />
-                      <p className="font-bold">Error Terdeteksi:</p>
-                      <p className="text-sm bg-red-50 p-3 rounded-xl border border-red-100">
-                        {serverError || error?.message || "Koneksi ke AI terputus."}
-                      </p>
-                      <button 
-                        onClick={() => window.location.reload()}
-                        className="mt-2 text-xs underline opacity-70"
-                      >
-                        Coba Refresh Halaman
-                      </button>
+                      <p className="font-bold">Masalah Terdeteksi:</p>
+                      <div className="text-xs bg-red-50 p-4 rounded-xl border border-red-100 font-mono text-left overflow-auto max-h-40">
+                        {serverError || error?.message || "Terjadi kesalahan tidak dikenal."}
+                      </div>
+                      <p className="text-[10px] mt-2 opacity-50">Cek log di Dashboard Vercel untuk detail lebih lanjut.</p>
                     </div>
                   ) : isLoading && !assistantMessage ? (
                     <div className="flex flex-col items-center gap-4">
@@ -159,7 +152,7 @@ export default function Home() {
                         <div className="h-3 w-3 bg-blue-400 rounded-full"></div>
                         <div className="h-3 w-3 bg-blue-400 rounded-full"></div>
                       </div>
-                      <p className="text-slate-400 text-sm animate-pulse">Sedang merangkai kata untukmu...</p>
+                      <p className="text-slate-400 text-sm animate-pulse">Merangkai kata...</p>
                     </div>
                   ) : (
                     <p className="text-2xl font-serif text-slate-800 leading-relaxed text-center italic px-4">
