@@ -12,16 +12,22 @@ export default function Home() {
   const [step, setStep] = useState<'home' | 'mood' | 'result'>('home');
   const [selectedMood, setSelectedMood] = useState('');
   const cardRef = useRef<HTMLDivElement>(null);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const { messages, append, isLoading, setMessages, error } = useChat({
     api: '/api/chat',
-    onResponse: (response) => {
+    onResponse: async (response) => {
       if (!response.ok) {
-        console.error('Response error:', response.statusText);
+        const data = await response.json();
+        setServerError(data.error || response.statusText);
+      } else {
+        setServerError(null);
       }
     },
     onError: (err) => {
       console.error('Chat hook error:', err);
+      // useChat error object often doesn't contain the JSON body, 
+      // so we rely more on onResponse for detailed server errors.
     }
   });
 
@@ -32,8 +38,8 @@ export default function Home() {
     setSelectedMood(mood);
     setStep('result');
     setMessages([]);
+    setServerError(null);
     
-    // Gunakan setTimeout untuk memastikan transisi selesai sebelum memanggil API
     setTimeout(async () => {
       try {
         await append({
@@ -65,6 +71,7 @@ export default function Home() {
     setStep('home');
     setMessages([]);
     setSelectedMood('');
+    setServerError(null);
   };
 
   return (
@@ -131,11 +138,19 @@ export default function Home() {
                 </div>
                 
                 <div className="relative z-10">
-                  {error ? (
+                  {(error || serverError) ? (
                     <div className="flex flex-col items-center text-red-500 gap-2 text-center p-4">
                       <AlertCircle className="w-10 h-10" />
-                      <p className="font-medium">Waduh, koneksi ke AI terputus.</p>
-                      <p className="text-sm opacity-80">Pastikan API Key Gemini sudah benar di Vercel/env.local dan limit kuota masih ada.</p>
+                      <p className="font-bold">Error Terdeteksi:</p>
+                      <p className="text-sm bg-red-50 p-3 rounded-xl border border-red-100">
+                        {serverError || error?.message || "Koneksi ke AI terputus."}
+                      </p>
+                      <button 
+                        onClick={() => window.location.reload()}
+                        className="mt-2 text-xs underline opacity-70"
+                      >
+                        Coba Refresh Halaman
+                      </button>
                     </div>
                   ) : isLoading && !assistantMessage ? (
                     <div className="flex flex-col items-center gap-4">
@@ -167,7 +182,7 @@ export default function Home() {
                 </button>
                 <button
                   onClick={downloadImage}
-                  disabled={isLoading || !!error || !assistantMessage}
+                  disabled={isLoading || !!error || !!serverError || !assistantMessage}
                   className="flex-1 flex items-center justify-center gap-2 py-4 bg-blue-600 text-white rounded-2xl font-semibold shadow-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                 >
                   <Download className="w-5 h-5" />
