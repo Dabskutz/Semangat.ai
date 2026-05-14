@@ -32,11 +32,8 @@ export default function Home() {
       }
     },
     onError: (err) => {
-      console.error('Chat hook error details:', err);
-      // useChat error message biasanya cukup generik, kita coba perjelas
-      if (err.message === 'Failed to fetch') {
-        setServerError('Gagal terhubung ke server. Periksa koneksi internet atau status server.');
-      }
+      console.error('Chat error:', err);
+      setServerError(`Gagal mendapatkan respon AI: ${err.message}`);
     }
   });
 
