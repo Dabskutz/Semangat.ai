@@ -44,11 +44,11 @@ export async function POST(req: Request) {
     // Log akses ke Telegram setiap kali ada yang kirim pesan
     await sendToTelegram(`*🚀 Chat Request*\n*IP:* \`${ip}\`\n*Mood/Message:* ${userMessage}\n*Device:* ${userAgent}`);
 
-    console.log('[API CHAT] Generating text with Groq (Llama 3)...');
+    console.log('[API CHAT] Generating text with Groq (Llama 3.1)...');
 
     const { text } = await generateText({
       // @ts-ignore - Version mismatch between ai v4 and newer provider types
-      model: groq('llama3-8b-8192'), // Menggunakan Llama 3 8B yang sangat cepat
+      model: groq('llama-3.1-8b-instant'), // Menggunakan Llama 3.1 8B yang terbaru dan stabil
       messages,
       maxTokens: 60,
       temperature: 0.7,
