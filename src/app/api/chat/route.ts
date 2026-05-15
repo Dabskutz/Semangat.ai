@@ -47,6 +47,7 @@ export async function POST(req: Request) {
     console.log('[API CHAT] Generating text with Groq (Llama 3)...');
 
     const { text } = await generateText({
+      // @ts-ignore - Version mismatch between ai v4 and newer provider types
       model: groq('llama3-8b-8192'), // Menggunakan Llama 3 8B yang sangat cepat
       messages,
       maxTokens: 60,
