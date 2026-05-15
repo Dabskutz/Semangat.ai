@@ -46,16 +46,26 @@ export async function POST(req: Request) {
 
     console.log('[API CHAT] Generating text with Groq (Llama 3.1)...');
 
-    const { text } = await generateText({
+    const result = await generateText({
       // @ts-ignore - Version mismatch between ai v4 and newer provider types
-      model: groq('llama-3.1-8b-instant'), // Menggunakan Llama 3.1 8B yang terbaru dan stabil
+      model: groq('llama-3.1-8b-instant'),
       messages,
-      maxTokens: 60,
-      temperature: 0.7,
-      system: 'Anda adalah motivator Indonesia. Berikan kata-kata semangat yang sangat singkat dan puitis (maksimal 15 kata). JANGAN gunakan format markdown. Kirimkan teks murni saja.',
+      maxTokens: 100,
+      temperature: 0.8,
+      system: 'Anda adalah motivator Indonesia. Berikan satu kalimat kata-kata semangat yang puitis dan menginspirasi. Jangan gunakan markdown. Kirimkan teks murni saja.',
     });
 
-    const cleanText = text.replace(/[*_#`~]/g, '').trim();
+    console.log('[API CHAT] Raw Result:', JSON.stringify(result).substring(0, 100));
+
+    let cleanText = (result.text || '').replace(/[*_#`~]/g, '').trim();
+    
+    // Fallback jika teks kosong
+    if (!cleanText) {
+      console.warn('[API CHAT] Groq returned empty text, using fallback.');
+      cleanText = 'Tetaplah melangkah, karena setiap langkah kecilmu adalah awal dari kesuksesan besar.';
+    }
+
+    console.log('[API CHAT] Final Text:', cleanText);
     
     return new Response(JSON.stringify({ text: cleanText }), {
       status: 200,
