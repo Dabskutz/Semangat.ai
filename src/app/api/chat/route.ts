@@ -13,20 +13,18 @@ export async function POST(req: Request) {
   try {
     const { messages } = await req.json();
 
-    console.log('[API CHAT] Generating text with Groq (Llama 3.1)...');
+    console.log('[API CHAT] Generating text with Groq (Llama 3.3)...');
 
-    const result = await generateText({
-      // @ts-ignore - Version mismatch between ai v4 and newer provider types
-      model: groq('llama-3.1-8b-instant'),
+    const { text } = await generateText({
+      // @ts-ignore
+      model: groq('llama-3.3-70b-versatile'),
       messages,
-      maxTokens: 100,
-      temperature: 0.8,
-      system: 'Anda adalah motivator Indonesia. Berikan satu kalimat kata-kata semangat yang puitis dan menginspirasi. JANGAN gunakan format markdown. Kirimkan teks murni saja.',
+      system: 'Anda adalah motivator Indonesia. Berikan satu kalimat penyemangat puitis yang SANGAT SINGKAT sesuai dengan mood user. JANGAN gunakan markdown, JANGAN gunakan tanda kutip di awal/akhir. Kirimkan teks murni saja.',
     });
 
-    const cleanText = (result.text || '').replace(/[*_#`~]/g, '').trim();
-    
-    console.log('[API CHAT] AI Response:', cleanText);
+    console.log('[API CHAT] Result Text:', text);
+
+    const cleanText = (text || '').replace(/[*_#`~]/g, '').trim();
     
     return new Response(JSON.stringify({ text: cleanText }), {
       status: 200,
