@@ -17,13 +17,16 @@ export async function POST(req: Request) {
     console.log('[API CHAT] Generating text with gemini-1.5-flash...');
 
     const { text } = await generateText({
-      model: google('models/gemini-2.5-flash'),
+      model: google('models/gemini-2.0-flash'),
       messages,
-      system: 'Anda adalah motivator Indonesia. Berikan kata-kata semangat yang sangat singkat dan puitis.',
+      system: 'Anda adalah motivator Indonesia. Berikan kata-kata semangat yang sangat singkat dan puitis. JANGAN gunakan format markdown sama sekali (seperti **, *, _, `). Kirimkan teks murni saja.',
     });
 
+    // Membersihkan markdown jika masih ada
+    const cleanText = text.replace(/[*_#`~]/g, '');
+
     console.log('[API CHAT] Generation successful');
-    return new Response(JSON.stringify({ text }), {
+    return new Response(JSON.stringify({ text: cleanText }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

@@ -13,13 +13,15 @@ interface MoodButtonProps {
 export default function MoodButton({ mood, icon: Icon, onClick, color }: MoodButtonProps) {
   return (
     <motion.button
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      className={`flex flex-col items-center justify-center p-6 rounded-2xl bg-white shadow-lg border-2 border-transparent hover:border-slate-200 transition-all ${color}`}
+      whileHover={{ scale: 1.02, y: -4 }}
+      whileTap={{ scale: 0.98 }}
+      className={`flex flex-col items-center justify-center p-6 rounded-[28px] bg-secondary-container text-on-secondary-container border border-outline/10 hover:shadow-xl transition-all w-full aspect-square`}
       onClick={onClick}
     >
-      <Icon className="w-12 h-12 mb-2" />
-      <span className="font-medium text-slate-700">{mood}</span>
+      <div className={`p-4 rounded-2xl bg-white/10 mb-3 ${color.replace('text-', 'bg-').replace('-500', '/10').replace('-600', '/10')}`}>
+        <Icon className={`w-10 h-10 ${color}`} />
+      </div>
+      <span className="font-bold text-lg tracking-tight">{mood}</span>
     </motion.button>
   );
 }

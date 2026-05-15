@@ -3,9 +3,9 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChat } from 'ai/react';
-import { Frown, Coffee, Zap, Smile, ArrowLeft, Download, RefreshCw, AlertCircle } from 'lucide-react';
+import { Frown, Coffee, Zap, Smile, ArrowLeft, Download, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
 import MoodButton from '@/components/MoodButton';
-import { toPng } from 'html-to-image';
+import { htmlToImage } from 'html-to-image';
 
 export default function Home() {
   const [step, setStep] = useState<'home' | 'mood' | 'result'>('home');
@@ -14,8 +14,6 @@ export default function Home() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoadingManual, setIsLoadingManual] = useState(false);
 
-  // Kita tetap gunakan useChat untuk manajemen state pesan, 
-  // tapi kita lakukan fetch manual karena streaming sering bermasalah.
   const { messages, setMessages } = useChat({
     api: '/api/chat',
   });
@@ -44,7 +42,6 @@ export default function Home() {
       }
 
       const data = await response.json();
-      // Set pesan asisten secara manual ke dalam state useChat
       setMessages([{ id: Date.now().toString(), role: 'assistant', content: data.text }]);
     } catch (e: any) {
       console.error('Fetch error:', e);
@@ -54,16 +51,21 @@ export default function Home() {
     }
   };
 
-  const downloadImage = () => {
+  const downloadImage = async () => {
     if (cardRef.current === null) return;
-    toPng(cardRef.current, { cacheBust: true })
-      .then((dataUrl) => {
-        const link = document.createElement('a');
-        link.download = `semangat-${selectedMood}.png`;
-        link.href = dataUrl;
-        link.click();
-      })
-      .catch((err) => console.error(err));
+    try {
+      const { toPng } = await import('html-to-image');
+      const dataUrl = await toPng(cardRef.current, { 
+        cacheBust: true,
+        backgroundColor: '#fdfcff' // md-sys-color-background
+      });
+      const link = document.createElement('a');
+      link.download = `semangat-${selectedMood.toLowerCase()}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (err) {
+      console.error('Download failed:', err);
+    }
   };
 
   const reset = () => {
@@ -75,28 +77,37 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full">
+    <main className="min-h-screen bg-background text-on-background flex items-center justify-center p-6 selection:bg-primary-container selection:text-on-primary-container">
+      <div className="max-w-lg w-full">
         <AnimatePresence mode="wait">
           {step === 'home' && (
             <motion.div
               key="home"
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="text-center space-y-8"
+              exit={{ opacity: 0, y: -30 }}
+              className="text-center space-y-10"
             >
-              <h1 className="text-5xl font-bold text-slate-900 tracking-tight">
-                Semangat<span className="text-blue-600">.ai</span>
-              </h1>
-              <p className="text-slate-600 text-lg">
-                Dapatkan dosis semangat harianmu melalui sentuhan kecerdasan buatan.
-              </p>
+              <div className="space-y-4">
+                <motion.div 
+                  initial={{ scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  className="inline-flex p-4 rounded-[32px] bg-primary-container text-on-primary-container mb-2"
+                >
+                  <Sparkles className="w-10 h-10" />
+                </motion.div>
+                <h1 className="text-6xl font-black tracking-tighter text-on-background">
+                  Semangat<span className="text-primary">.ai</span>
+                </h1>
+                <p className="text-on-surface-variant text-xl font-medium leading-relaxed max-w-sm mx-auto">
+                  Dosis semangat instan dengan sentuhan AI yang puitis.
+                </p>
+              </div>
               <button
                 onClick={() => setStep('mood')}
-                className="w-full py-4 bg-blue-600 text-white rounded-2xl font-semibold text-lg shadow-lg hover:bg-blue-700 transition-colors"
+                className="w-full py-5 bg-primary text-on-primary rounded-[28px] font-bold text-xl shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/90 transition-all active:scale-95"
               >
-                Mulai
+                Mulai Perjalanan
               </button>
             </motion.div>
           )}
@@ -104,18 +115,21 @@ export default function Home() {
           {step === 'mood' && (
             <motion.div
               key="mood"
-              initial={{ opacity: 0, x: 20 }}
+              initial={{ opacity: 0, x: 50 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-6"
+              exit={{ opacity: 0, x: -50 }}
+              className="space-y-8"
             >
-              <div className="flex items-center gap-4">
-                <button onClick={() => setStep('home')} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
-                  <ArrowLeft className="w-6 h-6 text-slate-600" />
-                </button>
-                <h2 className="text-2xl font-bold text-slate-800">Apa yang kamu rasakan?</h2>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                   <button onClick={() => setStep('home')} className="p-3 hover:bg-surface-variant rounded-full transition-colors text-on-surface">
+                    <ArrowLeft className="w-6 h-6" />
+                  </button>
+                  <span className="text-primary font-bold tracking-widest uppercase text-sm">Pilih Suasana</span>
+                </div>
+                <h2 className="text-4xl font-black text-on-surface px-2">Bagaimana perasaanmu saat ini?</h2>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-6">
                 <MoodButton mood="Sedih" icon={Frown} color="text-blue-500" onClick={() => handleMoodSelect('Sedih')} />
                 <MoodButton mood="Lelah" icon={Coffee} color="text-amber-600" onClick={() => handleMoodSelect('Lelah')} />
                 <MoodButton mood="Ragu" icon={Zap} color="text-purple-500" onClick={() => handleMoodSelect('Ragu')} />
@@ -127,61 +141,79 @@ export default function Home() {
           {step === 'result' && (
             <motion.div
               key="result"
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="space-y-6"
+              exit={{ opacity: 0, scale: 0.8 }}
+              className="space-y-8"
             >
-              <div ref={cardRef} className="bg-white p-8 rounded-3xl shadow-xl border border-slate-100 min-h-[300px] flex flex-col justify-center relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10">
-                  <h2 className="text-4xl font-bold uppercase tracking-widest">{selectedMood}</h2>
+              <div 
+                ref={cardRef} 
+                className="bg-surface text-on-surface p-10 rounded-[48px] shadow-2xl border border-outline/10 min-h-[400px] flex flex-col justify-between relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 p-8 opacity-5">
+                  <h2 className="text-8xl font-black uppercase tracking-tighter rotate-12 select-none">{selectedMood}</h2>
                 </div>
                 
-                <div className="relative z-10">
+                <div className="relative z-10 flex-grow flex flex-col justify-center">
                   {serverError ? (
-                    <div className="flex flex-col items-center text-red-500 gap-2 text-center p-4">
-                      <AlertCircle className="w-10 h-10" />
-                      <p className="font-bold">Masalah Terdeteksi:</p>
-                      <div className="text-xs bg-red-50 p-4 rounded-xl border border-red-100 font-mono text-left overflow-auto max-h-40">
+                    <div className="flex flex-col items-center text-error gap-4 text-center p-4">
+                      <div className="p-4 bg-error-container rounded-full">
+                        <AlertCircle className="w-12 h-12" />
+                      </div>
+                      <p className="font-black text-2xl">Aduh, Terdeteksi Masalah</p>
+                      <div className="text-sm bg-surface-variant p-6 rounded-[24px] font-mono text-left w-full border border-error/20">
                         {serverError}
                       </div>
-                      <p className="text-[10px] mt-2 opacity-50">Cek log di Dashboard Vercel untuk detail lebih lanjut.</p>
                     </div>
                   ) : isLoadingManual && !assistantMessage ? (
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="animate-pulse flex space-x-2">
-                        <div className="h-3 w-3 bg-blue-400 rounded-full"></div>
-                        <div className="h-3 w-3 bg-blue-400 rounded-full"></div>
-                        <div className="h-3 w-3 bg-blue-400 rounded-full"></div>
+                    <div className="flex flex-col items-center gap-6">
+                      <div className="flex space-x-3">
+                        {[0, 1, 2].map((i) => (
+                          <motion.div 
+                            key={i}
+                            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
+                            transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
+                            className="h-4 w-4 bg-primary rounded-full"
+                          />
+                        ))}
                       </div>
-                      <p className="text-slate-400 text-sm animate-pulse">Merangkai kata...</p>
+                      <p className="text-on-surface-variant font-bold text-lg animate-pulse">Merangkai kata-kata ajaib...</p>
                     </div>
                   ) : (
-                    <p className="text-2xl font-serif text-slate-800 leading-relaxed text-center italic px-4">
-                      {assistantMessage ? `"${assistantMessage.content}"` : "..."}
-                    </p>
+                    <div className="space-y-6">
+                      <Sparkles className="w-10 h-10 text-primary opacity-30" />
+                      <p className="text-3xl md:text-4xl font-black text-on-surface leading-[1.2] tracking-tight italic">
+                        {assistantMessage ? `"${assistantMessage.content}"` : "..."}
+                      </p>
+                    </div>
                   )}
                 </div>
-                <div className="mt-8 text-center text-slate-400 text-sm font-medium">
-                  semangat.ai
+
+                <div className="mt-12 flex items-center justify-between border-t border-outline/10 pt-6">
+                  <div className="text-primary font-black text-xl tracking-tighter">
+                    Semangat<span className="opacity-50">.ai</span>
+                  </div>
+                  <div className="text-on-surface-variant/40 text-xs font-bold uppercase tracking-widest">
+                    Generated by Gemini
+                  </div>
                 </div>
               </div>
 
               <div className="flex gap-4">
                 <button
                   onClick={reset}
-                  className="flex-1 flex items-center justify-center gap-2 py-4 bg-slate-100 text-slate-700 rounded-2xl font-semibold hover:bg-slate-200 transition-colors"
+                  className="flex-1 flex items-center justify-center gap-3 py-5 bg-secondary-container text-on-secondary-container rounded-[28px] font-bold text-lg hover:bg-secondary-container/80 transition-all active:scale-95"
                 >
-                  <RefreshCw className="w-5 h-5" />
+                  <RefreshCw className="w-6 h-6" />
                   Ulangi
                 </button>
                 <button
                   onClick={downloadImage}
                   disabled={isLoadingManual || !!serverError || !assistantMessage}
-                  className="flex-1 flex items-center justify-center gap-2 py-4 bg-blue-600 text-white rounded-2xl font-semibold shadow-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                  className="flex-[1.5] flex items-center justify-center gap-3 py-5 bg-primary text-on-primary rounded-[28px] font-bold text-lg shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-30 active:scale-95"
                 >
-                  <Download className="w-5 h-5" />
-                  Simpan
+                  <Download className="w-6 h-6" />
+                  Simpan Gambar
                 </button>
               </div>
             </motion.div>
