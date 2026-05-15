@@ -3,37 +3,66 @@ import { generateText } from 'ai';
 
 export const maxDuration = 30;
 
+const MODELS = [
+  'gemini-3.1-flash-lite-preview',
+  'gemini-2.5-flash',
+  'gemini-2.5-flash-lite'
+];
+
 export async function POST(req: Request) {
-  console.log('[API CHAT] Request start (Google Mode)');
+  console.log('[API CHAT] Request start');
   
   try {
     const { messages } = await req.json();
-    
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'Google API Key missing' }), { status: 401 });
     }
 
-    console.log('[API CHAT] Generating text with gemini-1.5-flash...');
+    let lastError = null;
+    
+    // Looping melalui model yang tersedia (Fallback Logic)
+    for (const modelId of MODELS) {
+      try {
+        console.log(`[API CHAT] Trying model: ${modelId}...`);
+        
+        const { text } = await generateText({
+          // @ts-ignore - Bypass version mismatch types
+          model: google(modelId),
+          messages,
+          system: 'Anda adalah motivator Indonesia. Berikan kata-kata semangat yang sangat singkat dan puitis. JANGAN gunakan format markdown sama sekali. Kirimkan teks murni saja.',
+        });
 
-    const { text } = await generateText({
-      // @ts-ignore - Version mismatch between ai v4 and google v3 types
-      model: google('models/gemini-1.5-flash'),
-      messages,
-      system: 'Anda adalah motivator Indonesia. Berikan kata-kata semangat yang sangat singkat dan puitis. JANGAN gunakan format markdown sama sekali (seperti **, *, _, `). Kirimkan teks murni saja.',
-    });
+        // Jika berhasil, bersihkan dan kirim respon
+        const cleanText = text.replace(/[*_#`~]/g, '');
+        console.log(`[API CHAT] Success with ${modelId}`);
+        
+        return new Response(JSON.stringify({ text: cleanText, model: modelId }), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
 
-    // Membersihkan markdown jika masih ada
-    const cleanText = text.replace(/[*_#`~]/g, '');
+      } catch (error: any) {
+        console.warn(`[API CHAT] Model ${modelId} failed:`, error.message);
+        lastError = error;
+        // Lanjut ke iterasi berikutnya (model selanjutnya)
+        continue;
+      }
+    }
 
-    console.log('[API CHAT] Generation successful');
-    return new Response(JSON.stringify({ text: cleanText }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // Jika semua model gagal
+    console.error('[API CHAT] All models failed');
+    return new Response(
+      JSON.stringify({ 
+        error: 'Semua model sedang limit atau bermasalah.', 
+        details: lastError?.message 
+      }),
+      { status: 500 }
+    );
 
   } catch (error: any) {
-    console.error('[API CHAT] Generation Error:', error);
+    console.error('[API CHAT] Global Error:', error);
     return new Response(
       JSON.stringify({ error: 'Server Error', details: error.message }),
       { status: 500 }
