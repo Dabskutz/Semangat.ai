@@ -30,7 +30,9 @@ export async function POST(req: Request) {
           // @ts-ignore
           model: google(modelId),
           messages,
-          system: 'Anda adalah motivator Indonesia. Berikan kata-kata semangat yang sangat singkat dan puitis. JANGAN gunakan format markdown. Kirimkan teks murni saja.',
+          maxTokens: 60, // Membatasi output agar sangat singkat (hemat token)
+          temperature: 0.7, // Membuat respon lebih fokus dan tidak bertele-tele
+          system: 'Anda adalah motivator Indonesia. Berikan kata-kata semangat yang sangat singkat dan puitis (maksimal 15 kata). JANGAN gunakan format markdown. Kirimkan teks murni saja.',
         });
 
         if (result && result.text && result.text.trim().length > 0) {
