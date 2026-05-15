@@ -4,9 +4,9 @@ import { generateText } from 'ai';
 export const maxDuration = 30;
 
 const MODELS = [
-  'gemini-3.1-flash-lite-preview',
-  'gemini-2.5-flash',
-  'gemini-2.5-flash-lite'
+  'models/gemini-2.0-flash-lite-preview-02-05', // Versi spesifik yang sering lebih stabil
+  'models/gemini-1.5-flash',
+  'models/gemini-1.5-flash-8b'
 ];
 
 export async function POST(req: Request) {
@@ -22,31 +22,31 @@ export async function POST(req: Request) {
 
     let lastError = null;
     
-    // Looping melalui model yang tersedia (Fallback Logic)
     for (const modelId of MODELS) {
       try {
         console.log(`[API CHAT] Trying model: ${modelId}...`);
         
-        const { text } = await generateText({
-          // @ts-ignore - Bypass version mismatch types
+        const result = await generateText({
+          // @ts-ignore
           model: google(modelId),
           messages,
-          system: 'Anda adalah motivator Indonesia. Berikan kata-kata semangat yang sangat singkat dan puitis. JANGAN gunakan format markdown sama sekali. Kirimkan teks murni saja.',
+          system: 'Anda adalah motivator Indonesia. Berikan kata-kata semangat yang sangat singkat dan puitis. JANGAN gunakan format markdown. Kirimkan teks murni saja.',
         });
 
-        // Jika berhasil, bersihkan dan kirim respon
-        const cleanText = text.replace(/[*_#`~]/g, '');
-        console.log(`[API CHAT] Success with ${modelId}`);
+        if (result && result.text && result.text.trim().length > 0) {
+          const cleanText = result.text.replace(/[*_#`~]/g, '').trim();
+          console.log(`[API CHAT] Success with ${modelId}: ${cleanText.substring(0, 20)}...`);
+          
+          return new Response(JSON.stringify({ text: cleanText }), {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          });
+        }
         
-        return new Response(JSON.stringify({ text: cleanText, model: modelId }), {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        });
-
+        console.warn(`[API CHAT] Model ${modelId} returned empty text`);
       } catch (error: any) {
         console.warn(`[API CHAT] Model ${modelId} failed:`, error.message);
         lastError = error;
-        // Lanjut ke iterasi berikutnya (model selanjutnya)
         continue;
       }
     }
