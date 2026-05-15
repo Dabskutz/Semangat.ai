@@ -20,11 +20,6 @@ export default function Home() {
 
   const assistantMessage = messages.find(m => m.role === 'assistant');
 
-  // Log kunjungan pertama kali ke Telegram (Opsi C++)
-  useEffect(() => {
-    fetch('/api/log', { method: 'POST' }).catch(() => {});
-  }, []);
-
   // Cooldown Timer logic
   useEffect(() => {
     if (cooldown > 0) {
