@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChat } from 'ai/react';
 import { Frown, Coffee, Zap, Smile, ArrowLeft, Download, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
@@ -12,6 +12,7 @@ export default function Home() {
   const cardRef = useRef<HTMLDivElement>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoadingManual, setIsLoadingManual] = useState(false);
+  const [cooldown, setCooldown] = useState(0); // Cooldown UI (Opsi C)
 
   const { messages, setMessages } = useChat({
     api: '/api/chat',
@@ -19,12 +20,28 @@ export default function Home() {
 
   const assistantMessage = messages.find(m => m.role === 'assistant');
 
+  // Log kunjungan pertama kali ke Telegram (Opsi C++)
+  useEffect(() => {
+    fetch('/api/log', { method: 'POST' }).catch(() => {});
+  }, []);
+
+  // Cooldown Timer logic
+  useEffect(() => {
+    if (cooldown > 0) {
+      const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [cooldown]);
+
   const handleMoodSelect = async (mood: string) => {
+    if (cooldown > 0) return; // Mencegah klik saat cooldown
+
     setSelectedMood(mood);
     setStep('result');
     setMessages([]);
     setServerError(null);
     setIsLoadingManual(true);
+    setCooldown(10); // Set cooldown 10 detik setelah klik
     
     try {
       const response = await fetch('/api/chat', {
@@ -56,11 +73,9 @@ export default function Home() {
       const { toPng } = await import('html-to-image');
       const dataUrl = await toPng(cardRef.current, { 
         cacheBust: true,
-        backgroundColor: '#000000', // md-sys-color-background (True Black)
-        pixelRatio: 2, // Meningkatkan ketajaman gambar
-        style: {
-          transform: 'scale(1)', // Memastikan tidak ada distorsi saat pengambilan gambar
-        }
+        backgroundColor: '#000000',
+        pixelRatio: 2,
+        style: { transform: 'scale(1)' }
       });
       const link = document.createElement('a');
       link.download = `semangat-${selectedMood.toLowerCase()}.png`;
@@ -103,7 +118,7 @@ export default function Home() {
                   Semangat<span className="text-primary">.ai</span>
                 </h1>
                 <p className="text-on-surface-variant text-xl font-medium leading-relaxed max-w-sm mx-auto">
-                  Jalani Harimu Sebagai Semestinya.
+                  Dosis semangat instan dengan sentuhan AI yang puitis.
                 </p>
               </div>
               <button
@@ -131,12 +146,19 @@ export default function Home() {
                   <span className="text-primary font-bold tracking-widest uppercase text-sm">Pilih Suasana</span>
                 </div>
                 <h2 className="text-4xl font-black text-on-surface px-2">Bagaimana perasaanmu saat ini?</h2>
+                {cooldown > 0 && (
+                  <p className="text-primary text-xs font-bold animate-pulse px-2">Tunggu {cooldown} detik sebelum mencoba lagi...</p>
+                )}
               </div>
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-6 relative">
                 <MoodButton mood="Sedih" icon={Frown} color="text-blue-500" onClick={() => handleMoodSelect('Sedih')} />
                 <MoodButton mood="Lelah" icon={Coffee} color="text-amber-600" onClick={() => handleMoodSelect('Lelah')} />
                 <MoodButton mood="Ragu" icon={Zap} color="text-purple-500" onClick={() => handleMoodSelect('Ragu')} />
                 <MoodButton mood="Senang" icon={Smile} color="text-green-500" onClick={() => handleMoodSelect('Senang')} />
+                
+                {cooldown > 0 && (
+                  <div className="absolute inset-0 bg-background/20 backdrop-blur-[1px] rounded-[28px] z-20 cursor-not-allowed" title="Cooldown aktif" />
+                )}
               </div>
             </motion.div>
           )}
