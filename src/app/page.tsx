@@ -56,7 +56,7 @@ export default function Home() {
       const { toPng } = await import('html-to-image');
       const dataUrl = await toPng(cardRef.current, { 
         cacheBust: true,
-        backgroundColor: '#fdfcff', // md-sys-color-background
+        backgroundColor: '#000000', // md-sys-color-background (True Black)
         pixelRatio: 2, // Meningkatkan ketajaman gambar
         style: {
           transform: 'scale(1)', // Memastikan tidak ada distorsi saat pengambilan gambar
@@ -103,7 +103,7 @@ export default function Home() {
                   Semangat<span className="text-primary">.ai</span>
                 </h1>
                 <p className="text-on-surface-variant text-xl font-medium leading-relaxed max-w-sm mx-auto">
-                  Dosis semangat instan dengan sentuhan AI yang puitis.
+                  Jalani Harimu Sebagai Semestinya.
                 </p>
               </div>
               <button
