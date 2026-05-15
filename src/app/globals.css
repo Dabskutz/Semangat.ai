@@ -110,5 +110,5 @@ body {
 }
 
 .m3-button-tonal {
-  @apply bg-secondary-container text-on-secondary-container px-6 py-3 rounded-full font-medium transition-all hover:bg-opacity-80 active:scale-95;
+  @apply bg-secondary-container text-on-secondary-container px-6 py-3 rounded-full font-medium transition-all hover:opacity-90 active:scale-95;
 }
