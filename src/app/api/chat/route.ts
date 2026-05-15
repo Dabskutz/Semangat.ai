@@ -17,6 +17,7 @@ export async function POST(req: Request) {
     console.log('[API CHAT] Generating text with gpt-4o...');
 
     const { text } = await generateText({
+      // @ts-ignore - Version mismatch between ai v4 and openai v3 types
       model: openai('gpt-4o'),
       messages,
       system: 'Anda adalah motivator Indonesia. Berikan kata-kata semangat yang sangat singkat dan puitis. JANGAN gunakan format markdown sama sekali (seperti **, *, _, `). Kirimkan teks murni saja.',
