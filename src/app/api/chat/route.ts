@@ -4,8 +4,8 @@ import { generateText } from 'ai';
 export const maxDuration = 30;
 
 const MODELS = [
-  'models/gemini-2.0-flash-lite-preview', // Versi spesifik yang sering lebih stabil
-  'models/gemini-2.0-pro',
+  'models/gemini-2.0-flash-lite-preview-02-05',
+  'models/gemini-2.0-pro-exp-02-05',
   'models/gemini-2.0-flash'
 ];
 
