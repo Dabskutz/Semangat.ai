@@ -56,7 +56,11 @@ export default function Home() {
       const { toPng } = await import('html-to-image');
       const dataUrl = await toPng(cardRef.current, { 
         cacheBust: true,
-        backgroundColor: '#fdfcff' // md-sys-color-background
+        backgroundColor: '#fdfcff', // md-sys-color-background
+        pixelRatio: 2, // Meningkatkan ketajaman gambar
+        style: {
+          transform: 'scale(1)', // Memastikan tidak ada distorsi saat pengambilan gambar
+        }
       });
       const link = document.createElement('a');
       link.download = `semangat-${selectedMood.toLowerCase()}.png`;
@@ -149,10 +153,6 @@ export default function Home() {
                 ref={cardRef} 
                 className="bg-surface text-on-surface p-10 rounded-[48px] shadow-2xl border border-outline/10 min-h-[400px] flex flex-col justify-between relative overflow-hidden"
               >
-                <div className="absolute top-0 right-0 p-8 opacity-5">
-                  <h2 className="text-8xl font-black uppercase tracking-tighter rotate-12 select-none">{selectedMood}</h2>
-                </div>
-                
                 <div className="relative z-10 flex-grow flex flex-col justify-center">
                   {serverError ? (
                     <div className="flex flex-col items-center text-error gap-4 text-center p-4">
