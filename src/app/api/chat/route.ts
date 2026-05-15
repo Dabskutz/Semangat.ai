@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     console.log('[API CHAT] Generating text with gemini-1.5-flash...');
 
     const { text } = await generateText({
-      model: google('models/gemini-2.0-flash'),
+      model: google('models/gemini-2.5-flash'),
       messages,
       system: 'Anda adalah motivator Indonesia. Berikan kata-kata semangat yang sangat singkat dan puitis. JANGAN gunakan format markdown sama sekali (seperti **, *, _, `). Kirimkan teks murni saja.',
     });
