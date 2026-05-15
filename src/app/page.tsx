@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useChat } from 'ai/react';
 import { Frown, Coffee, Zap, Smile, ArrowLeft, Download, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
 import MoodButton from '@/components/MoodButton';
-import { htmlToImage } from 'html-to-image';
 
 export default function Home() {
   const [step, setStep] = useState<'home' | 'mood' | 'result'>('home');
