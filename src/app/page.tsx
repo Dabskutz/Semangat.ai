@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useChat } from 'ai/react';
 import { Frown, Coffee, Zap, Smile, ArrowLeft, Download, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
 import MoodButton from '@/components/MoodButton';
+import DonationModal from '@/components/DonationModal';
+import { Heart } from 'lucide-react';
 
 export default function Home() {
   const [step, setStep] = useState<'home' | 'mood' | 'result'>('home');
@@ -13,6 +15,7 @@ export default function Home() {
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoadingManual, setIsLoadingManual] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const [isDonationOpen, setIsDonationOpen] = useState(false);
 
   const { messages, setMessages } = useChat({
     api: '/api/chat',
@@ -240,6 +243,32 @@ export default function Home() {
           )}
         </AnimatePresence>
       </div>
+
+      {/* Floating Donation Button */}
+      <motion.button
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        whileHover={{ scale: 1.05, y: -2 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => setIsDonationOpen(true)}
+        className="fixed bottom-8 right-8 z-50 flex items-center gap-3 px-6 py-4 glass-card rounded-full text-white/90 border-white/10 hover:border-white/20 transition-all shadow-[0_10px_30px_rgba(0,0,0,0.5)] group"
+      >
+        <div className="relative">
+          <Heart className="w-5 h-5 text-red-400 group-hover:fill-red-400 transition-colors" />
+          <motion.div 
+            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+            className="absolute inset-0 bg-red-400 rounded-full"
+          />
+        </div>
+        <span className="font-bold text-sm tracking-wide hidden md:block">Dukung Kreator</span>
+      </motion.button>
+
+      {/* Donation Modal */}
+      <DonationModal 
+        isOpen={isDonationOpen} 
+        onClose={() => setIsDonationOpen(false)} 
+      />
     </main>
   );
 }
