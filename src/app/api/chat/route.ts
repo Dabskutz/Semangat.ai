@@ -8,7 +8,8 @@ const API_V1_MAPPING: Record<string, string> = {
   sedih: 'life',
   lelah: 'life',
   ragu: 'motivation',
-  senang: 'success'
+  senang: 'success',
+  koleksi: 'life'
 };
 
 // Mapping mood internal ke kategori API Publik (Liupurnomo API)
@@ -16,7 +17,8 @@ const API_V2_MAPPING: Record<string, string> = {
   sedih: 'kehidupan',
   lelah: 'motivasi',
   ragu: 'motivasi',
-  senang: 'kebahagiaan'
+  senang: 'kebahagiaan',
+  koleksi: 'kehidupan'
 };
 
 // Pool Jawaban Cadangan (Fallback Terakhir)
@@ -40,6 +42,21 @@ const FALLBACK_RESPONSES: Record<string, string[]> = {
     "Rayakan setiap detik kebahagiaanmu, biarkan senyummu menjadi pelita bagi orang-orang di sekitarmu.",
     "Kebahagiaan adalah energi semesta, simpanlah hangatnya untuk menerangi hari-hari yang akan datang.",
     "Syukuri momen ini, biarkan ia menjadi jangkar yang menguatkanmu di saat badai menyapa."
+  ],
+  koleksi: [
+    "Pendidikan adalah senjata paling ampuh untuk mengubah dunia. - Nelson Mandela",
+    "Imajinasi lebih penting daripada pengetahuan. - Albert Einstein",
+    "Waktumu terbatas, jangan sia-siakan dengan menjalani hidup orang lain. - Steve Jobs",
+    "Berhenti membandingkan dirimu dengan orang lain, bandingkan dirimu dengan dirimu yang kemarin. - Jordan Peterson",
+    "Hiduplah seolah-olah kamu akan mati besok. - Mahatma Gandhi",
+    "Kesuksesan adalah kemampuan untuk beralih dari satu kegagalan ke kegagalan lain tanpa kehilangan antusiasme. - Winston Churchill",
+    "Jangan biarkan opini orang lain menenggelamkan suara hatimu sendiri. - Steve Jobs",
+    "Dunia ini panggung sandiwara, tapi kita harus bermain dengan sungguh-sungguh. - Pramoedya Ananta Toer",
+    "Aku ingin mencintaimu dengan sederhana. - Sapardi Djoko Damono",
+    "Terkadang, orang yang paling sulit dicintai adalah orang yang paling membutuhkannya. - Tere Liye",
+    "Dunia mematahkan setiap orang, dan setelah itu, banyak yang kuat di tempat yang patah. - Ernest Hemingway",
+    "Tidak perlu menjadi sempurna untuk memulai, tapi kau harus memulai untuk menjadi sempurna. - Zig Ziglar",
+    "Kebahagiaan bisa ditemukan, bahkan di saat-saat tergelap, jika seseorang hanya ingat untuk menyalakan lampu. - J.K. Rowling"
   ]
 };
 
@@ -95,6 +112,7 @@ export async function POST(req: Request) {
     if (lastMessage.includes('Sedih')) userMood = 'sedih';
     else if (lastMessage.includes('Lelah')) userMood = 'lelah';
     else if (lastMessage.includes('Ragu')) userMood = 'ragu';
+    else if (lastMessage.includes('Koleksi')) userMood = 'koleksi';
 
     console.log(`[API CHAT] Step 1: Trying Public API for mood: ${userMood}...`);
 
@@ -109,12 +127,17 @@ export async function POST(req: Request) {
     }
 
     // LANGKAH 2: Jika API Publik gagal, gunakan Gemini (Pakai Token)
-    console.log('[API CHAT] Step 2: Falling back to Gemini 2.5 Flash AI...');
+    console.log(`[API CHAT] Step 2: Falling back to Gemini 2.5 Flash AI for mood: ${userMood}...`);
     try {
+      const isKoleksi = userMood === 'koleksi';
+      const systemPrompt = isKoleksi 
+        ? 'Anda adalah pustakawan dunia. Berikan satu kutipan bijak dari penulis atau tokoh terkenal dunia dalam bahasa Indonesia. Sebutkan nama tokohnya di akhir kalimat. JANGAN gunakan markdown.'
+        : 'Anda adalah motivator Indonesia. Berikan satu kalimat penyemangat puitis singkat sesuai mood user. JANGAN gunakan markdown, JANGAN gunakan tanda kutip.';
+
       const result = await generateText({
         model: google('gemini-2.5-flash') as any,
         messages,
-        system: 'Anda adalah motivator Indonesia. Berikan satu kalimat penyemangat puitis singkat sesuai mood user. JANGAN gunakan markdown, JANGAN gunakan tanda kutip.',
+        system: systemPrompt,
         maxTokens: 100,
       });
 

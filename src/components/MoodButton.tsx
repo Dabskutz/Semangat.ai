@@ -8,14 +8,15 @@ interface MoodButtonProps {
   icon: LucideIcon;
   onClick: () => void;
   color: string;
+  className?: string;
 }
 
-export default function MoodButton({ mood, icon: Icon, onClick, color }: MoodButtonProps) {
+export default function MoodButton({ mood, icon: Icon, onClick, color, className }: MoodButtonProps) {
   return (
     <motion.button
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
       whileTap={{ scale: 0.95 }}
-      className="neo-button flex flex-col items-center justify-center p-6 md:p-8 rounded-[24px] md:rounded-[32px] w-full aspect-square group relative overflow-hidden"
+      className={`neo-button flex flex-col items-center justify-center p-6 md:p-8 rounded-[24px] md:rounded-[32px] w-full group relative overflow-hidden ${className || 'aspect-square'}`}
       onClick={onClick}
     >
       {/* Subtle Glow Background on Hover */}

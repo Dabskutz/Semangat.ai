@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChat } from 'ai/react';
-import { Frown, Coffee, Zap, Smile, ArrowLeft, Download, RefreshCw, AlertCircle, Sparkles } from 'lucide-react';
+import { Frown, Coffee, Zap, Smile, ArrowLeft, Download, RefreshCw, AlertCircle, Sparkles, BookOpen } from 'lucide-react';
 import MoodButton from '@/components/MoodButton';
 import DonationModal from '@/components/DonationModal';
 import { Heart } from 'lucide-react';
@@ -161,6 +161,15 @@ export default function Home() {
                 <MoodButton mood="Lelah" icon={Coffee} color="text-orange-400" onClick={() => handleMoodSelect('Lelah')} />
                 <MoodButton mood="Ragu" icon={Zap} color="text-purple-400" onClick={() => handleMoodSelect('Ragu')} />
                 <MoodButton mood="Senang" icon={Smile} color="text-emerald-400" onClick={() => handleMoodSelect('Senang')} />
+                <div className="col-span-2">
+                   <MoodButton 
+                    mood="Koleksi Tokoh Dunia" 
+                    icon={BookOpen} 
+                    color="text-amber-400" 
+                    onClick={() => handleMoodSelect('Koleksi')} 
+                    className="aspect-[2/1] md:aspect-[3/1]"
+                   />
+                </div>
               </div>
             </motion.div>
           )}
