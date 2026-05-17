@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Heart, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
@@ -10,6 +11,8 @@ interface DonationModalProps {
 }
 
 export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -57,21 +60,24 @@ export default function DonationModal({ isOpen, onClose }: DonationModalProps) {
               <div className="relative group">
                 <div className="absolute -inset-4 bg-gradient-to-tr from-blue-500/20 to-purple-500/20 blur-2xl opacity-50 group-hover:opacity-100 transition-opacity" />
                 <div className="relative bg-white p-4 rounded-3xl shadow-2xl overflow-hidden aspect-square w-56 flex items-center justify-center">
-                  <Image 
-                    src="/qr/qris.png" 
-                    alt="QRIS Donation" 
-                    width={200} 
-                    height={200}
-                    className="w-full h-full object-contain"
-                    priority
-                    unoptimized // Untuk memudahkan upload file manual
-                  />
-                  {/* Overlay if image not found (placeholder style) */}
-                  <div className="absolute inset-0 bg-gray-100 flex flex-col items-center justify-center text-gray-400 text-[10px] font-bold uppercase tracking-widest text-center p-4">
-                     <p>Silakan upload</p>
-                     <p className="text-black">qris.png</p>
-                     <p>ke /public/qr/</p>
-                  </div>
+                  {!imageError ? (
+                    <Image 
+                      src="/qr/qris.png" 
+                      alt="QRIS Donation" 
+                      width={200} 
+                      height={200}
+                      className="w-full h-full object-contain"
+                      priority
+                      unoptimized
+                      onError={() => setImageError(true)}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-gray-400 text-[10px] font-bold uppercase tracking-widest text-center p-4">
+                       <p>Gagal memuat</p>
+                       <p className="text-black">qris.png</p>
+                       <p className="mt-2 text-[8px]">Pastikan file ada di /public/qr/</p>
+                    </div>
+                  )}
                 </div>
               </div>
 
