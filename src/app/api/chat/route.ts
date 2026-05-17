@@ -3,12 +3,20 @@ import { generateText } from 'ai';
 
 export const maxDuration = 30;
 
-// Mapping mood internal ke kategori API Publik
-const API_MOOD_MAPPING: Record<string, string> = {
-  sedih: 'life', // Hidup/Galau
-  lelah: 'life', // Perjuangan
-  ragu: 'motivation', // Motivasi untuk yakin
-  senang: 'success' // Kebahagiaan/Kesuksesan
+// Mapping mood internal ke kategori API Publik (Indonesian Quotes API)
+const API_V1_MAPPING: Record<string, string> = {
+  sedih: 'life',
+  lelah: 'life',
+  ragu: 'motivation',
+  senang: 'success'
+};
+
+// Mapping mood internal ke kategori API Publik (Liupurnomo API)
+const API_V2_MAPPING: Record<string, string> = {
+  sedih: 'kehidupan',
+  lelah: 'motivasi',
+  ragu: 'motivasi',
+  senang: 'kebahagiaan'
 };
 
 // Pool Jawaban Cadangan (Fallback Terakhir)
@@ -43,16 +51,34 @@ function getLocalFallback(mood: string): string {
 
 // Fungsi untuk mengambil quotes dari API Publik (Gratis & Hemat Token)
 async function fetchPublicQuote(mood: string): Promise<string | null> {
+  const m = mood.toLowerCase();
+  const sourceSelector = Math.random();
+
   try {
-    const category = API_MOOD_MAPPING[mood.toLowerCase()] || 'motivation';
-    const response = await fetch(`https://indonesian-quotes-api.vercel.app/api/quotes/random?category=${category}`, {
-      next: { revalidate: 3600 } // Cache selama 1 jam di Next.js
-    });
-    
-    if (!response.ok) return null;
-    
-    const data = await response.json();
-    return data.quote || data.content || null;
+    if (sourceSelector > 0.5) {
+      // SUMBER 1: Indonesian Quotes API
+      const category = API_V1_MAPPING[m] || 'motivation';
+      const response = await fetch(`https://indonesian-quotes-api.vercel.app/api/quotes/random?category=${category}`, {
+        cache: 'no-store'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return data.quote || data.content || null;
+      }
+    } else {
+      // SUMBER 2: Quotes Liupurnomo
+      const category = API_V2_MAPPING[m] || 'motivasi';
+      const response = await fetch(`https://quotes.liupurnomo.com/api/quotes/random?category=${category}`, {
+        cache: 'no-store'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        // Handle struktur data yang mungkin berbeda
+        const quote = data.data?.quote || data.quote || (Array.isArray(data) ? data[0]?.quote : null);
+        return quote;
+      }
+    }
+    return null;
   } catch (err) {
     console.error('[API CHAT] External API Error:', err);
     return null;
@@ -89,7 +115,7 @@ export async function POST(req: Request) {
         model: google('gemini-2.5-flash') as any,
         messages,
         system: 'Anda adalah motivator Indonesia. Berikan satu kalimat penyemangat puitis singkat sesuai mood user. JANGAN gunakan markdown, JANGAN gunakan tanda kutip.',
-        maxTokens: 100, // Menaikkan sedikit untuk kemampuan reasoning/thinking model 2.5
+        maxTokens: 100,
       });
 
       const textOutput = result.text || '';
