@@ -84,20 +84,25 @@ export async function POST(req: Request) {
 
     // LANGKAH 2: Jika API Publik gagal, gunakan Gemini (Pakai Token)
     console.log('[API CHAT] Step 2: Falling back to Gemini AI...');
-    const result = await generateText({
-      model: google('gemini-1.5-flash') as any,
-      messages,
-      system: 'Anda adalah motivator Indonesia. Berikan satu kalimat penyemangat puitis singkat sesuai mood user. JANGAN gunakan markdown, JANGAN gunakan tanda kutip.',
-      maxTokens: 60,
-    });
+    try {
+      const result = await generateText({
+        model: google('gemini-1.5-flash-latest') as any,
+        messages,
+        system: 'Anda adalah motivator Indonesia. Berikan satu kalimat penyemangat puitis singkat sesuai mood user. JANGAN gunakan markdown, JANGAN gunakan tanda kutip.',
+        maxTokens: 60,
+      });
 
-    const textOutput = result.text || '';
-    const cleanText = textOutput.replace(/[*_#`~"]/g, '').trim();
-    
-    return new Response(JSON.stringify({ text: cleanText || getLocalFallback(userMood), source: 'ai' }), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' },
-    });
+      const textOutput = result.text || '';
+      const cleanText = textOutput.replace(/[*_#`~"]/g, '').trim();
+      
+      return new Response(JSON.stringify({ text: cleanText || getLocalFallback(userMood), source: 'ai' }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch (aiError: any) {
+      console.error('[API CHAT] AI Service Error Detail:', JSON.stringify(aiError, null, 2));
+      throw aiError; // Lempar ke catch blok utama untuk fallback lokal
+    }
 
   } catch (error: any) {
     console.error('[API CHAT] Critical Error, using local fallback:', error.message);
