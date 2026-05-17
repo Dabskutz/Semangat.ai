@@ -12,7 +12,7 @@ export default function Home() {
   const cardRef = useRef<HTMLDivElement>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [isLoadingManual, setIsLoadingManual] = useState(false);
-  const [cooldown, setCooldown] = useState(0); // Cooldown UI (Opsi C)
+  const [cooldown, setCooldown] = useState(0);
 
   const { messages, setMessages } = useChat({
     api: '/api/chat',
@@ -20,7 +20,6 @@ export default function Home() {
 
   const assistantMessage = messages.find(m => m.role === 'assistant');
 
-  // Cooldown Timer logic
   useEffect(() => {
     if (cooldown > 0) {
       const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
@@ -29,14 +28,14 @@ export default function Home() {
   }, [cooldown]);
 
   const handleMoodSelect = async (mood: string) => {
-    if (cooldown > 0) return; // Mencegah klik saat cooldown
+    if (cooldown > 0) return;
 
     setSelectedMood(mood);
     setStep('result');
     setMessages([]);
     setServerError(null);
     setIsLoadingManual(true);
-    setCooldown(10); // Set cooldown 10 detik setelah klik
+    setCooldown(15);
     
     try {
       const response = await fetch('/api/chat', {
@@ -68,8 +67,8 @@ export default function Home() {
       const { toPng } = await import('html-to-image');
       const dataUrl = await toPng(cardRef.current, { 
         cacheBust: true,
-        backgroundColor: '#000000',
-        pixelRatio: 2,
+        backgroundColor: '#0a0a0b',
+        pixelRatio: 3,
         style: { transform: 'scale(1)' }
       });
       const link = document.createElement('a');
@@ -90,35 +89,40 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-background text-on-background flex items-center justify-center p-6 selection:bg-primary-container selection:text-on-primary-container">
-      <div className="max-w-lg w-full">
+    <main className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Background Decorative Elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-500/10 blur-[120px] rounded-full" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-500/10 blur-[120px] rounded-full" />
+
+      <div className="max-w-2xl w-full relative z-10">
         <AnimatePresence mode="wait">
           {step === 'home' && (
             <motion.div
               key="home"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 40 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -30 }}
-              className="text-center space-y-10"
+              exit={{ opacity: 0, y: -40 }}
+              transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="text-center space-y-12"
             >
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <motion.div 
-                  initial={{ scale: 0.8 }}
-                  animate={{ scale: 1 }}
-                  className="inline-flex p-4 rounded-[32px] bg-primary-container text-on-primary-container mb-2"
+                  initial={{ scale: 0.8, rotate: -10 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  className="inline-flex p-6 rounded-[32px] glass-card text-white mb-4"
                 >
-                  <Sparkles className="w-10 h-10" />
+                  <Sparkles className="w-12 h-12 text-blue-400" />
                 </motion.div>
-                <h1 className="text-6xl font-black tracking-tighter text-on-background">
-                  Semangat<span className="text-primary">.ai</span>
+                <h1 className="text-7xl md:text-8xl font-black tracking-tight premium-text-gradient">
+                  Semangat<span className="text-white">.ai</span>
                 </h1>
-                <p className="text-on-surface-variant text-xl font-medium leading-relaxed max-w-sm mx-auto">
-                  Dosis semangat instan dengan sentuhan AI yang puitis.
+                <p className="text-white/50 text-xl md:text-2xl font-medium leading-relaxed max-w-md mx-auto">
+                  Dosis inspirasi eksklusif yang dirancang khusus untuk jiwamu.
                 </p>
               </div>
               <button
                 onClick={() => setStep('mood')}
-                className="w-full py-5 bg-primary text-on-primary rounded-[28px] font-bold text-xl shadow-xl shadow-primary/20 hover:shadow-2xl hover:bg-primary/90 transition-all active:scale-95"
+                className="group relative inline-flex items-center justify-center px-10 py-6 font-bold text-black transition-all duration-200 bg-white rounded-full hover:bg-white/90 active:scale-95 text-xl shadow-[0_0_30px_rgba(255,255,255,0.2)]"
               >
                 Mulai Perjalanan
               </button>
@@ -128,32 +132,32 @@ export default function Home() {
           {step === 'mood' && (
             <motion.div
               key="mood"
-              initial={{ opacity: 0, x: 50 }}
+              initial={{ opacity: 0, x: 100 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -50 }}
-              className="space-y-8"
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ duration: 0.5, ease: "circOut" }}
+              className="space-y-12"
             >
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                   <button onClick={() => setStep('home')} className="p-3 hover:bg-surface-variant rounded-full transition-colors text-on-surface">
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                   <button onClick={() => setStep('home')} className="p-3 glass-card rounded-full hover:bg-white/10 transition-all text-white/70">
                     <ArrowLeft className="w-6 h-6" />
                   </button>
-                  <span className="text-primary font-bold tracking-widest uppercase text-sm">Pilih Suasana</span>
+                  <span className="text-white/40 font-bold tracking-[0.2em] uppercase text-xs">Pilih Suasana</span>
                 </div>
-                <h2 className="text-4xl font-black text-on-surface px-2">Bagaimana perasaanmu saat ini?</h2>
+                <h2 className="text-5xl font-black text-white leading-tight">Bagaimana kabarmu hari ini?</h2>
                 {cooldown > 0 && (
-                  <p className="text-primary text-xs font-bold animate-pulse px-2">Tunggu {cooldown} detik sebelum mencoba lagi...</p>
+                  <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                    <p className="text-white/50 text-xs font-bold uppercase tracking-wider">Cooldown aktif: {cooldown}s</p>
+                  </div>
                 )}
               </div>
-              <div className="grid grid-cols-2 gap-6 relative">
-                <MoodButton mood="Sedih" icon={Frown} color="text-blue-500" onClick={() => handleMoodSelect('Sedih')} />
-                <MoodButton mood="Lelah" icon={Coffee} color="text-amber-600" onClick={() => handleMoodSelect('Lelah')} />
-                <MoodButton mood="Ragu" icon={Zap} color="text-purple-500" onClick={() => handleMoodSelect('Ragu')} />
-                <MoodButton mood="Senang" icon={Smile} color="text-green-500" onClick={() => handleMoodSelect('Senang')} />
-                
-                {cooldown > 0 && (
-                  <div className="absolute inset-0 bg-background/20 backdrop-blur-[1px] rounded-[28px] z-20 cursor-not-allowed" title="Cooldown aktif" />
-                )}
+              <div className="grid grid-cols-2 gap-8">
+                <MoodButton mood="Sedih" icon={Frown} color="text-blue-400" onClick={() => handleMoodSelect('Sedih')} />
+                <MoodButton mood="Lelah" icon={Coffee} color="text-orange-400" onClick={() => handleMoodSelect('Lelah')} />
+                <MoodButton mood="Ragu" icon={Zap} color="text-purple-400" onClick={() => handleMoodSelect('Ragu')} />
+                <MoodButton mood="Senang" icon={Smile} color="text-emerald-400" onClick={() => handleMoodSelect('Senang')} />
               </div>
             </motion.div>
           )}
@@ -161,66 +165,75 @@ export default function Home() {
           {step === 'result' && (
             <motion.div
               key="result"
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              className="space-y-8"
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-10"
             >
               <div 
                 ref={cardRef} 
-                className="bg-surface text-on-surface p-10 rounded-[48px] shadow-2xl border border-outline/10 min-h-[400px] flex flex-col justify-between relative overflow-hidden"
+                className="glass-card p-12 md:p-16 rounded-[60px] min-h-[500px] flex flex-col justify-center relative overflow-hidden group"
               >
-                <div className="relative z-10 flex-grow flex flex-col justify-center">
+                {/* Decorative glow inside card */}
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[80px] rounded-full -mr-32 -mt-32" />
+                
+                <div className="relative z-10">
                   {serverError ? (
-                    <div className="flex flex-col items-center text-error gap-4 text-center p-4">
-                      <div className="p-4 bg-error-container rounded-full">
-                        <AlertCircle className="w-12 h-12" />
+                    <div className="text-center space-y-6">
+                      <div className="inline-flex p-6 bg-red-500/10 rounded-full border border-red-500/20">
+                        <AlertCircle className="w-12 h-12 text-red-500" />
                       </div>
-                      <p className="font-black text-2xl">Aduh, Terdeteksi Masalah</p>
-                      <div className="text-sm bg-surface-variant p-6 rounded-[24px] font-mono text-left w-full border border-error/20">
-                        {serverError}
-                      </div>
+                      <h3 className="text-3xl font-black text-white">Sistem Mengalami Kendala</h3>
+                      <p className="text-white/40 font-mono text-sm bg-black/40 p-6 rounded-3xl border border-white/5">{serverError}</p>
                     </div>
                   ) : isLoadingManual && !assistantMessage ? (
-                    <div className="flex flex-col items-center gap-6">
-                      <div className="flex space-x-3">
-                        {[0, 1, 2].map((i) => (
-                          <motion.div 
-                            key={i}
-                            animate={{ scale: [1, 1.5, 1], opacity: [0.5, 1, 0.5] }}
-                            transition={{ repeat: Infinity, duration: 1, delay: i * 0.2 }}
-                            className="h-4 w-4 bg-primary rounded-full"
-                          />
-                        ))}
+                    <div className="flex flex-col items-center gap-10">
+                      <div className="relative">
+                        <motion.div 
+                          animate={{ rotate: 360 }}
+                          transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+                          className="w-24 h-24 border-2 border-white/10 rounded-full"
+                        />
+                        <motion.div 
+                          animate={{ rotate: -360 }}
+                          transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
+                          className="absolute inset-0 border-t-2 border-blue-500 rounded-full"
+                        />
                       </div>
-                      <p className="text-on-surface-variant font-bold text-lg animate-pulse">Merangkai kata-kata ajaib...</p>
+                      <p className="text-white/40 font-bold text-xl tracking-widest animate-pulse uppercase">Merajut Kata...</p>
                     </div>
                   ) : (
-                    <div className="space-y-6">
-                      <Sparkles className="w-10 h-10 text-primary opacity-30" />
-                      <p className="text-3xl md:text-4xl font-black text-on-surface leading-[1.2] tracking-tight italic">
+                    <div className="space-y-10">
+                      <Sparkles className="w-12 h-12 text-blue-400/50" />
+                      <motion.p 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-4xl md:text-5xl font-black text-white leading-[1.3] tracking-tight"
+                      >
                         {assistantMessage ? `"${assistantMessage.content}"` : "..."}
-                      </p>
+                      </motion.p>
+                      <div className="h-1 w-20 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full" />
                     </div>
                   )}
                 </div>
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex flex-col md:flex-row gap-6">
                 <button
                   onClick={reset}
-                  className="flex-1 flex items-center justify-center gap-3 py-5 bg-secondary-container text-on-secondary-container rounded-[28px] font-bold text-lg hover:bg-secondary-container/80 transition-all active:scale-95"
+                  className="flex-1 flex items-center justify-center gap-3 py-6 bg-white/5 border border-white/10 text-white rounded-full font-bold text-lg hover:bg-white/10 transition-all active:scale-95"
                 >
                   <RefreshCw className="w-6 h-6" />
-                  Ulangi
+                  Mencoba Lagi
                 </button>
                 <button
                   onClick={downloadImage}
                   disabled={isLoadingManual || !!serverError || !assistantMessage}
-                  className="flex-[1.5] flex items-center justify-center gap-3 py-5 bg-primary text-on-primary rounded-[28px] font-bold text-lg shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-30 active:scale-95"
+                  className="flex-[1.5] flex items-center justify-center gap-3 py-6 bg-white text-black rounded-full font-bold text-lg shadow-[0_20px_40px_rgba(255,255,255,0.1)] hover:bg-white/90 transition-all disabled:opacity-20 active:scale-95"
                 >
                   <Download className="w-6 h-6" />
-                  Simpan Gambar
+                  Simpan Karya
                 </button>
               </div>
             </motion.div>

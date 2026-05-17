@@ -1,89 +1,73 @@
 @import "tailwindcss";
 
 :root {
-  /* Material 3 Dark/Monochrome Scheme (Expressive) */
-  --md-sys-color-primary: #ffffff;
-  --md-sys-color-on-primary: #000000;
-  --md-sys-color-primary-container: #333333;
-  --md-sys-color-on-primary-container: #ffffff;
-  --md-sys-color-secondary: #aaaaaa;
-  --md-sys-color-on-secondary: #000000;
-  --md-sys-color-secondary-container: #222222;
-  --md-sys-color-on-secondary-container: #eeeeee;
-  --md-sys-color-tertiary: #cccccc;
-  --md-sys-color-on-tertiary: #000000;
-  --md-sys-color-tertiary-container: #444444;
-  --md-sys-color-on-tertiary-container: #ffffff;
-  --md-sys-color-error: #ffb4ab;
-  --md-sys-color-on-error: #690005;
-  --md-sys-color-error-container: #93000a;
-  --md-sys-color-on-error-container: #ffdad6;
-  --md-sys-color-outline: #8d9199;
-  --md-sys-color-background: #000000;
-  --md-sys-color-on-background: #ffffff;
-  --md-sys-color-surface: #000000;
-  --md-sys-color-on-surface: #ffffff;
-  --md-sys-color-surface-variant: #1a1c1e;
-  --md-sys-color-on-surface-variant: #c3c7cf;
-  --md-sys-color-inverse-surface: #ffffff;
-  --md-sys-color-inverse-on-surface: #000000;
-  --md-sys-color-inverse-primary: #000000;
-  --md-sys-color-shadow: #000000;
-  --md-sys-color-surface-tint: #ffffff;
-  --md-sys-color-outline-variant: #43474e;
-  --md-sys-color-scrim: #000000;
-  
-  /* Background system */
-  --background: var(--md-sys-color-background);
-  --foreground: var(--md-sys-color-on-background);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Maintain the same dark/monochrome theme for both */
-    --md-sys-color-background: #000000;
-    --md-sys-color-on-background: #ffffff;
-    --md-sys-color-surface: #000000;
-    --md-sys-color-on-surface: #ffffff;
-  }
+  /* Premium Dark Theme Variables */
+  --bg-main: #0a0a0b;
+  --surface-main: #121214;
+  --surface-secondary: #1c1c1f;
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --border-light: rgba(255, 255, 255, 0.08);
 }
 
 @theme inline {
-  --color-primary: var(--md-sys-color-primary);
-  --color-on-primary: var(--md-sys-color-on-primary);
-  --color-primary-container: var(--md-sys-color-primary-container);
-  --color-on-primary-container: var(--md-sys-color-on-primary-container);
-  --color-secondary: var(--md-sys-color-secondary);
-  --color-on-secondary: var(--md-sys-color-on-secondary);
-  --color-secondary-container: var(--md-sys-color-secondary-container);
-  --color-on-secondary-container: var(--md-sys-color-on-secondary-container);
-  --color-surface: var(--md-sys-color-surface);
-  --color-on-surface: var(--md-sys-color-on-surface);
-  --color-surface-variant: var(--md-sys-color-surface-variant);
-  --color-on-surface-variant: var(--md-sys-color-on-surface-variant);
-  --color-outline: var(--md-sys-color-outline);
+  --color-primary: #ffffff;
+  --color-on-primary: #000000;
+  --color-background: var(--bg-main);
+  --color-surface: var(--surface-main);
+  --color-surface-variant: var(--surface-secondary);
+  --color-on-surface: var(--text-primary);
+  --color-on-surface-variant: var(--text-secondary);
+  --color-outline: var(--border-light);
 }
 
-body {
-  background: var(--md-sys-color-background);
-  color: var(--md-sys-color-on-background);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  transition: background-color 0.3s ease, color 0.3s ease;
+@layer base {
+  body {
+    @apply bg-background text-on-surface antialiased selection:bg-white selection:text-black;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.05) 0px, transparent 50%);
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
 }
 
-/* Material 3 Utilities */
-.m3-card {
-  @apply bg-surface-variant text-on-surface-variant rounded-[28px] p-6 transition-all;
-}
+@layer components {
+  /* Professional Glassmorphism */
+  .glass-card {
+    @apply bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.5)];
+  }
 
-.m3-card-elevated {
-  @apply bg-surface text-on-surface shadow-md rounded-[28px] p-6 transition-all;
-}
+  /* Modern Neo-Skeuomorphism */
+  .neo-button {
+    @apply bg-[#151518] border border-white/[0.05] transition-all duration-300;
+    box-shadow: 
+      8px 8px 16px rgba(0, 0, 0, 0.4),
+      -4px -4px 12px rgba(255, 255, 255, 0.02);
+  }
 
-.m3-button-filled {
-  @apply bg-primary text-on-primary px-6 py-3 rounded-full font-medium transition-all hover:shadow-lg active:scale-95;
-}
+  .neo-button:active {
+    box-shadow: 
+      inset 4px 4px 8px rgba(0, 0, 0, 0.5),
+      inset -2px -2px 6px rgba(255, 255, 255, 0.02);
+    @apply scale-[0.98];
+  }
 
-.m3-button-tonal {
-  @apply bg-secondary-container text-on-secondary-container px-6 py-3 rounded-full font-medium transition-all hover:opacity-90 active:scale-95;
+  /* Premium Typography */
+  .premium-text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-b from-white to-white/40;
+  }
+
+  /* Custom Scrollbar for Premium Feel */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+  }
 }

@@ -13,15 +13,23 @@ interface MoodButtonProps {
 export default function MoodButton({ mood, icon: Icon, onClick, color }: MoodButtonProps) {
   return (
     <motion.button
-      whileHover={{ scale: 1.02, y: -4 }}
-      whileTap={{ scale: 0.98 }}
-      className={`flex flex-col items-center justify-center p-6 rounded-[28px] bg-secondary-container text-on-secondary-container border border-outline/10 hover:shadow-xl transition-all w-full aspect-square`}
+      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      whileTap={{ scale: 0.95 }}
+      className="neo-button flex flex-col items-center justify-center p-8 rounded-[32px] w-full aspect-square group relative overflow-hidden"
       onClick={onClick}
     >
-      <div className={`p-4 rounded-2xl bg-white/10 mb-3 ${color.replace('text-', 'bg-').replace('-500', '/10').replace('-600', '/10')}`}>
-        <Icon className={`w-10 h-10 ${color}`} />
+      {/* Subtle Glow Background on Hover */}
+      <div className={`absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500 ${color.replace('text-', 'bg-')}`} />
+      
+      <div className="relative z-10 flex flex-col items-center">
+        <div className={`p-5 rounded-[24px] bg-white/[0.03] border border-white/[0.05] mb-4 group-hover:scale-110 transition-transform duration-500`}>
+          <Icon className={`w-10 h-10 ${color} filter drop-shadow-[0_0_8px_rgba(255,255,255,0.2)]`} />
+        </div>
+        <span className="font-bold text-lg tracking-tight text-white/90">{mood}</span>
       </div>
-      <span className="font-bold text-lg tracking-tight">{mood}</span>
+
+      {/* Premium Border Highlight */}
+      <div className="absolute inset-px rounded-[32px] border border-white/5 pointer-events-none" />
     </motion.button>
   );
 }
