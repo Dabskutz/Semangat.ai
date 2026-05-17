@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     // LANGKAH 2: Jika API Publik gagal, gunakan Gemini (Pakai Token)
     console.log('[API CHAT] Step 2: Falling back to Gemini AI...');
     const result = await generateText({
-      model: google('gemini-1.5-flash'),
+      model: google('gemini-1.5-flash') as any,
       messages,
       system: 'Anda adalah motivator Indonesia. Berikan satu kalimat penyemangat puitis singkat sesuai mood user. JANGAN gunakan markdown, JANGAN gunakan tanda kutip.',
       maxTokens: 60,
