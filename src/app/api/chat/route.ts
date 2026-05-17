@@ -83,13 +83,13 @@ export async function POST(req: Request) {
     }
 
     // LANGKAH 2: Jika API Publik gagal, gunakan Gemini (Pakai Token)
-    console.log('[API CHAT] Step 2: Falling back to Gemini 2.0 Flash AI...');
+    console.log('[API CHAT] Step 2: Falling back to Gemini 2.5 Flash AI...');
     try {
       const result = await generateText({
-        model: google('gemini-2.0-flash') as any,
+        model: google('gemini-2.5-flash') as any,
         messages,
         system: 'Anda adalah motivator Indonesia. Berikan satu kalimat penyemangat puitis singkat sesuai mood user. JANGAN gunakan markdown, JANGAN gunakan tanda kutip.',
-        maxTokens: 60,
+        maxTokens: 100, // Menaikkan sedikit untuk kemampuan reasoning/thinking model 2.5
       });
 
       const textOutput = result.text || '';
@@ -100,7 +100,7 @@ export async function POST(req: Request) {
         headers: { 'Content-Type': 'application/json' },
       });
     } catch (aiError: any) {
-      console.error('[API CHAT] Gemini 2.0 Flash Error Detail:', JSON.stringify(aiError, null, 2));
+      console.error('[API CHAT] Gemini 2.5 Flash Error Detail:', JSON.stringify(aiError, null, 2));
       throw aiError; 
     }
 
