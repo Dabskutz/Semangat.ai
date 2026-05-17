@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChat } from 'ai/react';
-import { Frown, Coffee, Zap, Smile, ArrowLeft, Download, RefreshCw, AlertCircle, Sparkles, BookOpen } from 'lucide-react';
+import { Frown, Coffee, Zap, Smile, ArrowLeft, Download, RefreshCw, AlertCircle, Sparkles, BookOpen, ChevronRight } from 'lucide-react';
 import MoodButton from '@/components/MoodButton';
 import DonationModal from '@/components/DonationModal';
 import { Heart } from 'lucide-react';
@@ -237,8 +237,20 @@ export default function Home() {
                   className="flex-1 flex items-center justify-center gap-3 py-4 md:py-6 bg-white/5 border border-white/10 text-white rounded-full font-bold text-base md:text-lg hover:bg-white/10 transition-all active:scale-95"
                 >
                   <RefreshCw className="w-5 h-5 md:w-6 md:h-6" />
-                  Mencoba Lagi
+                  Menu Utama
                 </button>
+
+                {selectedMood === 'Koleksi' && (
+                  <button
+                    onClick={() => handleMoodSelect('Koleksi')}
+                    disabled={isLoadingManual}
+                    className="flex-1 flex items-center justify-center gap-3 py-4 md:py-6 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-full font-bold text-base md:text-lg hover:bg-amber-500/20 transition-all active:scale-95 disabled:opacity-30"
+                  >
+                    <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+                    Kutipan Lain
+                  </button>
+                )}
+
                 <button
                   onClick={downloadImage}
                   disabled={isLoadingManual || !!serverError || !assistantMessage}
